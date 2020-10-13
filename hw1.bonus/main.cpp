@@ -7,30 +7,31 @@ namespace typelist {
     // Define TypeList
     //
 
-    struct NullType;
-
-    template <typename ...T>
-    struct TypeList {};
-
-    template <typename H, typename X, typename ...T>
-    struct TypeList<H, X, T...> {
-        using Head = H;
-        using Tail = TypeList<X, T...>;
+    class NullType {
     };
 
-    template <typename H, typename T>
-    struct TypeList<H, T> {
-        using Head = H;
-        using Tail = TypeList<T>;
+    class __NonExistentType {
     };
 
-    template <typename H>
-    struct TypeList<H> {
-        using Head = H;
+    template<typename ...Args>
+    struct TypeList {
+        using Head = NullType;
         using Tail = NullType;
     };
 
-    using EmptyTypeList = TypeList<>;
+    template<typename H, typename ...T>
+    struct TypeList<H, T...> {
+        using Head = H;
+        using Tail = TypeList<T...>;
+    };
+
+    typedef TypeList<> EmptyTypeList;
+
+    template<typename H>
+    struct TypeList<H> {
+        using Head = H;
+        using Tail = EmptyTypeList;
+    };
 
     //
     // Define meta functions
@@ -38,141 +39,212 @@ namespace typelist {
 
     // #1 Length
 
-    template <typename T>
+    template<typename T>
     struct Length {
         static const size_t val = 1 + Length<typename T::Tail>::val;
     };
 
-    template <>
+    template<>
     struct Length<NullType> {
         static const size_t val = 0;
     };
 
     // #2 TypeAt
 
-    template <typename T, size_t idx>
+    template<size_t idx, typename ...T>
     struct TypeAt {
-        using res = typename TypeAt<typename T::Tail, idx-1>::res;
-    };
-
-    template <>
-    struct TypeAt<NullType, 0> {
         using res = NullType;
     };
 
-    template <size_t idx>
-    struct TypeAt<NullType, idx> {
+    template<size_t idx, typename ...T>
+    struct TypeAt<idx, TypeList<T...>> {
+        using res = typename TypeAt<idx - 1, typename TypeList<T...>::Tail>::res;
+    };
+
+    template<size_t idx>
+    struct TypeAt<idx, NullType> {
         using res = NullType;
     };
 
-    template <typename T>
-    struct TypeAt<T, 0> {
-        using res = typename T::Head;
+    template<typename ...T>
+    struct TypeAt<0, TypeList<T...>> {
+        using res = typename TypeList<T...>::Head;
     };
 
     // #3 IndexOf
 
-    template<typename T, typename U>
-    struct IndexOf {};
-
-    template <typename T, typename ...K, typename U>
-    struct IndexOf<TypeList<T, K...>, U> {
-        static const ssize_t val = 1 + IndexOf<TypeList<K...>, U>::val;
+    template<typename U, typename ...T>
+    struct IndexOf {
+        static const size_t val = 1;
     };
 
-    template<typename T>
-    struct IndexOf<EmptyTypeList, T> {
-        static const ssize_t val = std::numeric_limits<ssize_t>::min();
+    template<typename ...K, typename U>
+    struct IndexOf<U, TypeList<K...>> {
+        static const size_t val = 1 + IndexOf<U, typename TypeList<K...>::Tail>::val;
     };
 
     template<typename T, typename ...K>
     struct IndexOf<TypeList<T, K...>, T> {
-        static const ssize_t val = 0;
+        static const size_t val = 0;
     };
 
     // #4 Add
 
-    template <typename T, typename U, size_t idx>
-    struct Add {
+    template<typename U, size_t idx, typename ...T>
+    struct Add;
+
+    template<typename U, size_t idx, typename ...K>
+    struct Add<U, idx, TypeList<K...>> {
         using res = TypeList<
-            typename T::Head,
-            typename Add<typename T::Tail, U, idx-1>::res
-        >;
+                typename TypeList<K...>::Head,
+                typename Add<
+                        U,
+                        idx - 1,
+                        typename TypeList<K...>::Tail>::res>;
     };
 
-    template <typename T, typename U>
-    struct Add<T, U, 0> {
+    template<typename U, typename T>
+    struct Add<U, 0, T> {
         using res = TypeList<U, T>;
     };
 
-    template <typename U, size_t idx>
-    struct Add<NullType, U, idx> {
+    template<typename U, size_t ind>
+    struct Add<U, ind, TypeList<NullType>> {
         using res = U;
     };
 
-    template <typename U>
-    struct Add<NullType, U, 0> {
-        using res = U;
-    };
+    // #5 RemoveAll
 
-    // #5 Remove
+    template<typename U, typename ...T>
+    struct RemoveAll;
 
-    template <typename T, typename U>
-    struct Remove {
+    template<typename U, typename ...T>
+    struct RemoveAll<U, TypeList<T...>> {
         using res = TypeList<
-            typename T::Head,
-            typename Remove<typename T::Tail, U>::res
-        >;
+                typename TypeList<T...>::Head,
+                typename RemoveAll<
+                        U,
+                        typename TypeList<T...>::Tail>::res>;
     };
 
-    template <typename U>
-    struct Remove<NullType, U> {
+    template<typename T, typename ...K>
+    struct RemoveAll<T, TypeList<T, K...>> {
+        using res = typename RemoveAll<T, typename TypeList<T, K...>::Tail>::res;
+    };
+
+    template<typename T>
+    struct RemoveAll<T, EmptyTypeList> {
         using res = NullType;
     };
 
-    template <typename T, typename ...U>
-    struct Remove<TypeList<T, U...>, T> {
-        using res = TypeList<U...>;
-    };
+    // #*extra1 Join
 
-    // #6 RemoveAll
-
-    template <typename T, typename U>
-    struct RemoveAll {
-        using res = TypeList<
-            typename T::Head,
-            typename RemoveAll<typename T::Tail, U>::res
-        >;
-    };
-
-    template <typename T>
-    struct RemoveAll<NullType, T> {
+    template<class ...T>
+    struct Join {
         using res = NullType;
     };
 
-    template <typename T, typename ...U>
-    struct RemoveAll<TypeList<T, U...>, T> {
-        using res = typename RemoveAll<TypeList<U...>, T>::res;
+    template<class ...T>
+    struct Join<TypeList<T...>> {
+        using res = TypeList<T...>;
+    };
+
+    template<class ...T, class ...K, class ... U>
+    struct Join<TypeList<T...>, TypeList<K...>, U...> {
+        using res = typename Join<TypeList<T..., K...>, U...>::res;
+    };
+
+    // #*extra2 Flatten
+
+    template<class T>
+    struct Flatten {
+        using res = TypeList<T>;
+    };
+
+    template<class ...T>
+    struct Flatten<TypeList<T...>> {
+        using res = typename Join<typename Flatten<T>::res...>::res;
+    };
+
+    // #6 Remove
+
+    template<typename U, typename ...T>
+    struct Remove;
+
+    template<typename U, typename ...T>
+    struct Remove<U, TypeList<T...>> {
+        using res =
+        typename Flatten<
+                TypeList<
+                        typename TypeList<T...>::Head,
+                        typename Remove<
+                                U,
+                                typename TypeList<T...>::Tail
+                        >::res
+                >
+        >::res;
+    };
+
+    template<typename T, typename ...K>
+    struct Remove<T, TypeList<T, K...>> {
+        using res = typename Remove<__NonExistentType, TypeList<K...>>::res;
+    };
+
+    template<typename T>
+    struct Remove<T, EmptyTypeList> {
+        using res = NullType;
     };
 
     // #7 NoDuplicates
 
-    template <typename T>
-    struct NoDuplicates {
-        using res = TypeList<
-            typename T::Head,
-            typename NoDuplicates<
-                typename RemoveAll<
-                    typename T::Tail,
-                    typename T::Head
-                >::res
-            >::res
-        >;
+    template<typename ...T>
+    struct NoDuplicates;
+
+    template<typename T>
+    struct NoDuplicates<TypeList<T>> {
+    private:
+        using tailWithoutHead = TypeList<T>;
+        using tailWithoutDublicates = TypeList<T>;
+    public:
+        using res = TypeList<T>;
     };
 
-    template <>
-    struct NoDuplicates<NullType> {
+    template<>
+    struct NoDuplicates<EmptyTypeList> {
+    private:
+        using tailWithoutHead = NullType;
+        using tailWithoutDublicates = NullType;
+    public:
         using res = NullType;
+    };
+
+    template<typename ...T>
+    struct NoDuplicates<TypeList<T...>> {
+    private:
+        using tailWithoutHead =
+        typename Flatten<
+                typename RemoveAll<
+                        typename TypeList<T...>::Head,
+                        typename TypeList<T...>::Tail
+                >::res
+        >::res;
+        using tailWithoutDublicates =
+        typename Flatten<
+                typename NoDuplicates<tailWithoutHead>::res
+        >::res;
+    public:
+        using res =
+        typename Flatten<
+                typename RemoveAll<
+                        NullType,
+                        typename Flatten<
+                                TypeList<
+                                        typename TypeList<T...>::Head,
+                                        tailWithoutDublicates
+                                >
+                        >::res
+                >::res
+        >::res;
     };
 
 };
@@ -182,9 +254,10 @@ using namespace typelist;
 
 int main() {
 
-    Remove<TypeList<int, char, float, float, char, int, float, double>, double>::res a = 2;
+    Remove<double, TypeList<int, int, int, char, float, float, char, int, char, float, float, char, int, double, float, double>>::res b = 2;
 
-    // , int, char, float, float, char, int, double, float, double
+    NoDuplicates<TypeList<int, int, int, char, float, float, char, int, char, float, float, char, int, double, float, double>>::res a = 2;
+
     return 0;
 }
 
