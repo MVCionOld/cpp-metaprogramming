@@ -254,9 +254,9 @@ using namespace typelist;
 
 int main() {
 
-    Remove<double, TypeList<int, int, int, char, float, float, char, int, char, float, float, char, int, double, float, double>>::res b = 2;
+    Remove<double, TypeList<int, int, int, char, float, float, char, int, char, float, float, char, int, double, float, double>>::res b;
 
-    NoDuplicates<TypeList<int, int, int, char, float, float, char, int, char, float, float, char, int, double, float, double>>::res a = 2;
+    NoDuplicates<TypeList<int, int, int, char, float, float, char, int, char, float, float, char, int, double, float, double>>::res a;
 
     return 0;
 }
