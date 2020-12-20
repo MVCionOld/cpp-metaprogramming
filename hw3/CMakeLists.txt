@@ -12,4 +12,4 @@ add_executable(
         MetaGraphLib/common/TypeList/TypeList.h
         MetaGraphLib/AdjacencyMatrixGraph/AdjacencyMatrixGraphEdges.h
         MetaGraphLib/common/MetaGraphVertices.h
-        MetaGraphLib/AdjacencyListGraph/AdjacencyListGraphEdges.h)
+        MetaGraphLib/AdjacencyListGraph/AdjacencyListGraphEdges.h Classes/Classes.h)

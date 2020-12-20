@@ -14,11 +14,12 @@ template<typename ...TVertices, typename ...TAdjacencyEdgesLists>
 class AdjacencyListGraph<typelist::TypeList <TVertices...>, typelist::TypeList<TAdjacencyEdgesLists...>>
 {
 public:
-  using Vertices = typename typelist::TypeList<TVertices...>;
-  using AdjacencyEdges = typename typelist::TypeList<TAdjacencyEdgesLists...>;
-
-  static constexpr size_t nVertices = typelist::Length<Vertices>::val;
+  using Vertices            = typename typelist::TypeList<TVertices...>;
+  using AdjacencyEdgesLists = typename typelist::TypeList<TAdjacencyEdgesLists...>;
+  static constexpr size_t nVertices            = typelist::Length<Vertices>::val;
+  static constexpr size_t nAdjacencyEdgesLists = typelist::Length<AdjacencyEdgesLists>::val;
   static_assert(nVertices != 0, "NoVerticesException");
+  static_assert(nAdjacencyEdgesLists == nVertices, "Graph's struct is incorrect");
 
   AdjacencyListGraph () :
       vertices()
@@ -55,5 +56,6 @@ public:
 
 private:
   MetaGraphVertices<Vertices>             vertices;
+
 };
 #endif //HW3_ADJACENCYLISTGRAPH_H

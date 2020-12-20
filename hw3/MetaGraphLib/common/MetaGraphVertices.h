@@ -14,28 +14,23 @@ template<size_t idx>
 struct AdjacencyMatrixGraphVerticesSet;
 
 template<typename ...Args>
-class MetaGraphVertices<typelist::TypeList < Args...>>
+struct MetaGraphVertices<typelist::TypeList < Args...>>
 {
-public:
   using Head = typename typelist::TypeList<Args...>::Head;
   using Tail = typename typelist::TypeList<Args...>::Tail;
 
   MetaGraphVertices ()
     : upVertex(std::make_unique<Head>()) {}
 
-  template<size_t idx> friend struct AdjacencyMatrixGraphVerticesGet;
-  template<size_t idx> friend struct AdjacencyMatrixGraphVerticesSet;
-
-private:
   std::unique_ptr<Head> upVertex{};
   MetaGraphVertices<Tail> verticesTail;
 };
 
 template<>
-class MetaGraphVertices<typelist::NullType> {};
+struct MetaGraphVertices<typelist::NullType> {};
 
 template<>
-class MetaGraphVertices<typelist::EmptyTypeList> {};
+struct MetaGraphVertices<typelist::EmptyTypeList> {};
 
 template<size_t idx>
 struct AdjacencyMatrixGraphVerticesGet
