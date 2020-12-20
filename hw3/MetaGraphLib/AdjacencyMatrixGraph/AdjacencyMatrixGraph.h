@@ -10,9 +10,8 @@ template<typename V, typename E>
 struct AdjacencyMatrixGraph {};
 
 template<typename ...TVertices, typename ...TEdges>
-class AdjacencyMatrixGraph<typelist::TypeList <TVertices...>, typelist::TypeList<TEdges...>>
+struct AdjacencyMatrixGraph<typelist::TypeList <TVertices...>, typelist::TypeList<TEdges...>>
 {
-public:
   using Vertices = typename typelist::TypeList<TVertices...>;
   using Edges = typename typelist::TypeList<TEdges...>;
 
@@ -93,7 +92,6 @@ public:
       ::Set(edges, std::forward<T>(obj));
   }
 
-private:
   AdjacencyMatrixGraphEdges<Edges> edges;
   MetaGraphVertices<Vertices>      vertices;
 };

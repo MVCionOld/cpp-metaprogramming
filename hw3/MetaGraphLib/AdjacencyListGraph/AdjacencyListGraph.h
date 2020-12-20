@@ -11,9 +11,8 @@ template<typename V, typename E>
 struct AdjacencyListGraph {};
 
 template<typename ...TVertices, typename ...TAdjacencyEdgesLists>
-class AdjacencyListGraph<typelist::TypeList <TVertices...>, typelist::TypeList<TAdjacencyEdgesLists...>>
+struct AdjacencyListGraph<typelist::TypeList <TVertices...>, typelist::TypeList<TAdjacencyEdgesLists...>>
 {
-public:
   using Vertices            = typename typelist::TypeList<TVertices...>;
   using AdjacencyEdgesLists = typename typelist::TypeList<TAdjacencyEdgesLists...>;
   static constexpr size_t nVertices            = typelist::Length<Vertices>::val;
@@ -54,8 +53,6 @@ public:
       ::Set(vertices, std::forward<T>(obj));
   }
 
-private:
   MetaGraphVertices<Vertices>             vertices;
-
 };
 #endif //HW3_ADJACENCYLISTGRAPH_H
